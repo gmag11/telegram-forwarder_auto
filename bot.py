@@ -26,6 +26,7 @@ API_HASH = config("API_HASH", default=None)
 SESSION = config("SESSION")
 FROM_ = config("FROM_CHANNEL")
 TO_ = config("TO_CHANNEL")
+SHOW_SENDER = config("SHOW_SENDER", default=False, cast=bool)
 
 FROM = [int(i) for i in FROM_.split()]
 TO = [int(i) for i in TO_.split()]
@@ -37,13 +38,26 @@ except Exception as ap:
     print(f"ERROR - {ap}")
     exit(1)
 
-@BotzHubUser.on(events.NewMessage(incoming=True, chats=FROM))
+@BotzHubUser.on(events.NewMessage(chats=FROM))
 async def sender_bH(event):
     for i in TO:
         try:
+            Message = event.message
+            if SHOW_SENDER:
+                sender = await event.get_sender()
+                if sender.username is not None:
+                    Username = "@" + sender.username
+                else:
+                    Username = sender.first_name
+                    if sender.last_name is not None:
+                        Username += f" {sender.last_name}"
+                # else:
+                #     Username = sender.
+                Message.message = Username + '\n' + event.message.message
+
             await BotzHubUser.send_message(
                 i,
-                event.message
+                Message
             )
         except Exception as e:
             print(e)
