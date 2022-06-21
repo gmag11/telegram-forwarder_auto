@@ -21,24 +21,25 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 print("Starting...")
 
 # Basics
+TO_ = config("TO_CHANNEL")
 APP_ID = config("APP_ID", default=None, cast=int)
 API_HASH = config("API_HASH", default=None)
 SESSION = config("SESSION")
 FROM_ = config("FROM_CHANNEL")
-TO_ = config("TO_CHANNEL")
 SHOW_SENDER = config("SHOW_SENDER", default=False, cast=bool)
 
 FROM = [int(i) for i in FROM_.split()]
 TO = [int(i) for i in TO_.split()]
 
 try:
-    BotzHubUser = TelegramClient(StringSession(SESSION), APP_ID, API_HASH)
-    BotzHubUser.start()
+    tgClient = TelegramClient(StringSession(SESSION), APP_ID, API_HASH)
+    tgClient.start()
 except Exception as ap:
     print(f"ERROR - {ap}")
     exit(1)
 
-@BotzHubUser.on(events.NewMessage(chats=FROM))
+
+@tgClient.on(events.NewMessage(chats=FROM))
 async def sender_bH(event):
     for i in TO:
         try:
@@ -51,11 +52,9 @@ async def sender_bH(event):
                     Username = sender.first_name
                     if sender.last_name is not None:
                         Username += f" {sender.last_name}"
-                # else:
-                #     Username = sender.
                 Message.message = Username + '\n' + event.message.message
 
-            await BotzHubUser.send_message(
+            await tgClient.send_message(
                 i,
                 Message
             )
@@ -63,4 +62,4 @@ async def sender_bH(event):
             print(e)
 
 print("Bot has started.")
-BotzHubUser.run_until_disconnected()
+tgClient.run_until_disconnected()
